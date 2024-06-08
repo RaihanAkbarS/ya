@@ -12,6 +12,43 @@ if not os.path.exists(directory):
 # Mengatur konfigurasi halaman Streamlit
 st.set_page_config(page_title="YouTube Downloader", page_icon="🚀", layout="wide")
 
+# Mengatur tema menjadi dark mode
+def set_dark_mode():
+    st.markdown(
+        """
+        <style>
+        /* Teks */
+        .css-1bxz6y {
+            color: #f8f9fa !important;
+        }
+        /* Input teks */
+        .st-eg input {
+            color: #f8f9fa !important;
+        }
+        /* Input placeholder */
+        .st-eg input::placeholder {
+            color: #ced4da !important;
+        }
+        /* Input background */
+        .st-eg input {
+            background-color: #343a40 !important;
+        }
+        /* Selectbox */
+        .st-ec select {
+            color: #f8f9fa !important;
+            background-color: #343a40 !important;
+        }
+        /* Spinner */
+        .st-dk.st-el::before {
+            border-color: #f8f9fa transparent transparent transparent !important;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
+set_dark_mode()
+
 # Fungsi untuk mendapatkan informasi video
 @st.cache_data
 def get_info(url):
@@ -142,5 +179,4 @@ else:
                         label="Unduh Video",
                         data=video_bytes,
                         file_name=file_name,
-                        mime="video/mp4"
-                    )
+                        mime="video

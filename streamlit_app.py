@@ -10,7 +10,7 @@ def download_video(url, resolution):
         stream = yt.streams.filter(res=resolution, file_extension='mp4').first()
         if stream:
             video_bytes = BytesIO()
-            stream.download(video_bytes)
+            stream.download(output_path=video_bytes)
             thumbnail_url = yt.thumbnail_url
             return video_bytes, thumbnail_url
         else:

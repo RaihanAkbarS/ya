@@ -77,7 +77,7 @@ if url:
             else:
                 file_name = v_info['title'] + ".mp4" 
                 
-        button = st.button("Download ⚡️")
+        button = st.download_button("Download ⚡️")
         if button:
             with st.spinner('Downloading...'):
                 try:

@@ -22,12 +22,19 @@ st.markdown(f"""
         background-repeat: no-repeat;
         background-position: center;
     }}
-    .stTextInput > div > div {{
-        background: rgba(255, 255, 255, 0.5);  /* Semi-transparan background */
-        border: 1px solid rgba(255, 255, 255, 0.5);  /* Semi-transparan border */
+    .stTextInput > div {{
+        background: rgba(255, 255, 255, 0.5) !important;  /* Semi-transparan background */
+        border: 1px solid rgba(255, 255, 255, 0.5) !important;  /* Semi-transparan border */
     }}
     .stTextInput > div > div > input {{
-        color: black;
+        color: black !important;
+    }}
+    .stDownloadButton > button {{
+        background-color: #FF4B4B;
+        color: white;
+    }}
+    .stDownloadButton > button:hover {{
+        background-color: #FF0000;
     }}
     </style>
 """, unsafe_allow_html=True)

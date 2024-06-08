@@ -69,10 +69,50 @@ def download_video(url, itag):
 # Judul aplikasi
 st.title("YouTube Downloader 🚀")
 
+# Menggunakan session state untuk menyimpan URL
+if 'url' not in st.session_state:
+    st.session_state.url = ""
+
 # Input URL video
 url = st.text_input("Tempel URL di sini 👇", placeholder='https://www.youtube.com/')
+
 if st.button("Cek Link"):
     if url:
+        with st.spinner("Mengambil informasi video..."):
+            v_info = get_info(url)
+        st.session_state.url = url  # Simpan URL saat ini
+        col1, col2 = st.columns([1, 1.5], gap="small")
+        with st.container():
+            with col1:            
+                st.image(v_info["image"])   
+            with col2:
+                st.subheader("Detail Video ⚙️")
+                res_inp = st.selectbox('Pilih Resolusi', v_info["resolutions"])
+                id = v_info["resolutions"].index(res_inp)            
+                st.write(f"**Judul:** {v_info['title']}")
+                st.write(f"**Durasi:** {v_info['length']} detik")
+                st.write(f"**Resolusi:** {v_info['resolutions'][id]}")
+                st.write(f"**Frame Rate:** {v_info['fps'][id]}")
+                st.write(f"**Format:** {v_info['format'][id]}")
+                file_name = st.text_input('Simpan dengan nama', placeholder=v_info['title'])
+                if file_name:
+                    if file_name != v_info['title']:
+                        file_name += ".mp4"
+                else:
+                    file_name = v_info['title'] + ".mp4" 
+
+                # Tombol unduh video
+                video_bytes = download_video(url, v_info['itag'][id])
+                if video_bytes:
+                    st.download_button(
+                        label="Unduh Video",
+                        data=video_bytes,
+                        file_name=file_name,
+                        mime="video/mp4"
+                    )
+else:
+    if st.session_state.url:  # Cek apakah URL sudah tersimpan di session state
+        url = st.session_state.url
         with st.spinner("Mengambil informasi video..."):
             v_info = get_info(url)
         col1, col2 = st.columns([1, 1.5], gap="small")

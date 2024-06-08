@@ -2,6 +2,7 @@ import streamlit as st
 from pytube import YouTube
 from io import BytesIO
 from PIL import Image
+import os
 
 # Fungsi untuk mendownload video
 def download_video(url, resolution):
@@ -10,9 +11,9 @@ def download_video(url, resolution):
         stream = yt.streams.filter(res=resolution, file_extension='mp4').first()
         if stream:
             video_bytes = BytesIO()
-            stream.download(output_path=video_bytes)
+            stream.download(output_path="video.mp4")  # Simpan sementara di file "video.mp4"
             thumbnail_url = yt.thumbnail_url
-            return video_bytes, thumbnail_url
+            return "video.mp4", thumbnail_url  # Mengembalikan alamat file sementara dan URL thumbnail
         else:
             st.error(f"Tidak ada stream yang tersedia dengan resolusi {resolution}.")
             return None, None
@@ -40,14 +41,17 @@ def main():
     # Tombol untuk memulai unduhan
     if st.button("Download"):
         if video_url:
-            video_bytes, _ = download_video(video_url, resolution)
-            if video_bytes:
-                st.download_button(
-                    label="Download Video",
-                    data=video_bytes.getvalue(),
-                    file_name="video.mp4",
-                    mime="video/mp4",
-                )
+            video_file, _ = download_video(video_url, resolution)
+            if video_file:
+                with open(video_file, "rb") as f:
+                    video_bytes = f.read()
+                    st.download_button(
+                        label="Download Video",
+                        data=video_bytes,
+                        file_name="video.mp4",
+                        mime="video/mp4",
+                    )
+                os.remove(video_file)  # Hapus file sementara setelah diunduh
 
 if __name__ == "__main__":
     main()

@@ -9,8 +9,8 @@ directory = 'downloads/'
 if not os.path.exists(directory):
     os.makedirs(directory)
 
-# Mengatur konfigurasi halaman Streamlit dengan dark mode
-st.set_page_config(page_title="YouTube Downloader", page_icon="🚀", layout="wide", theme="dark")
+# Mengatur konfigurasi halaman Streamlit
+st.set_page_config(page_title="YouTube Downloader", page_icon="🚀", layout="wide")
 
 # Fungsi untuk mendapatkan informasi video
 @st.cache_data

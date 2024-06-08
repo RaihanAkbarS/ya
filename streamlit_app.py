@@ -1,57 +1,172 @@
 import streamlit as st
 from pytube import YouTube
 import os
-import base64
+from io import BytesIO
 
-def clear_text():
-    st.session_state["url"] = ""
-    st.session_state["quality"] = ""
+# Membuat directory untuk menyimpan video yang diunduh
+directory = 'downloads/'
+if not os.path.exists(directory):
+    os.makedirs(directory)
 
-def download_file(stream):
-    title = stream.title + '.mp4'  # Menambahkan ekstensi file
-    stream.download(filename=title)
+# Mengatur konfigurasi halaman Streamlit
+st.set_page_config(page_title="YouTube Downloader", page_icon="🚀", layout="wide")
+
+# Mengatur tema menjadi dark mode
+def set_dark_mode():
+    st.markdown(
+        """
+        <style>
+        /* Teks */
+        .css-1bxz6y {
+            color: #f8f9fa !important;
+        }
+        /* Input teks */
+        .st-eg input {
+            color: #f8f9fa !important;
+        }
+        /* Input placeholder */
+        .st-eg input::placeholder {
+            color: #ced4da !important;
+        }
+        /* Input background */
+        .st-eg input {
+            background-color: #343a40 !important;
+        }
+        /* Selectbox */
+        .st-ec select {
+            color: #f8f9fa !important;
+            background-color: #343a40 !important;
+        }
+        /* Spinner */
+        .st-dk.st-el::before {
+            border-color: #f8f9fa transparent transparent transparent !important;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
+set_dark_mode()
+
+# Fungsi untuk mendapatkan informasi video
+@st.cache_data
+def get_info(url):
+    yt = YouTube(url)
+    streams = yt.streams.filter(type='video')
+    details = {
+        "image": yt.thumbnail_url,
+        "streams": streams,
+        "title": yt.title,
+        "length": yt.length,
+        "resolutions": set(),  # Menggunakan set untuk menyimpan resolusi unik
+        "itag": [],
+        "fps": [],
+        "format": []
+    }
     
-    with open(title, 'rb') as f:
-        bytes = f.read()
-        b64 = base64.b64encode(bytes).decode()
-        href = f'<a href="data:file/mp4;base64,{b64}" download=\'{title}\'>\
-            Unduh file\
-        </a>'
-        st.markdown(href, unsafe_allow_html=True)
+    for stream in streams:
+        res = stream.resolution
+        if res:
+            details["resolutions"].add(res)
+            details["itag"].append(stream.itag)
+            details["fps"].append(stream.fps)
+            details["format"].append(stream.mime_type)
+    
+    return details
 
-    os.remove(title)
-
-def can_access(url):
-    access = False
-    if len(url) > 0:
+# Fungsi untuk mengunduh video dan mengonversinya menjadi byte
+def download_video(url, itag):
+    yt = YouTube(url)
+    stream = yt.streams.get_by_itag(itag)
+    if stream:
+        buffer = BytesIO()
         try:
-            tube = YouTube(url)
-            if tube.check_availability() is None:
-                access=True
-        except:
-            pass
-    return access
+            stream.stream_to_buffer(buffer)
+            buffer.seek(0)
+            return buffer
+        except Exception as e:
+            st.error(f"Error: {e}")
+            return None
+    else:
+        st.error("Error: Stream not found.")
+        return None
 
-st.set_page_config(page_title=" Youtube downloader", layout="wide")
+# Judul aplikasi
+st.title("YouTube Downloader 🚀")
 
-with st.sidebar:
-    st.title("YouTube Downloader")
+# Menggunakan session state untuk menyimpan URL
+if 'url' not in st.session_state:
+    st.session_state.url = ""
 
-    url = st.text_input("Masukkan URL di sini", key="url")
+# Input URL video
+url = st.text_input("Tempel URL di sini 👇", placeholder='https://www.youtube.com/')
 
-    if can_access(url):
-        tube = YouTube(url)
-        resolutions = set([stream.resolution for stream in tube.streams.filter(type="video")])
-        resolution = st.selectbox("Pilih Resolusi", sorted(resolutions), key="resolution")
+if st.button("Cek Link"):
+    if url:
+        with st.spinner("Mengambil informasi video..."):
+            v_info = get_info(url)
+        st.session_state.url = url  # Simpan URL saat ini
+        col1, col2 = st.columns([1, 1.5], gap="small")
+        with st.container():
+            with col1:            
+                st.image(v_info["image"])   
+            with col2:
+                st.subheader("Detail Video ⚙️")
+                res_inp = st.selectbox('Pilih Resolusi', sorted(list(v_info["resolutions"])))  # Mengubah set menjadi list dan mengurutkannya
+                id = list(v_info["resolutions"]).index(res_inp)            
+                st.write(f"**Judul:** {v_info['title']}")
+                st.write(f"**Durasi:** {v_info['length']} detik")
+                st.write(f"**Resolusi:** {v_info['resolutions'][id]}")
+                st.write(f"**Frame Rate:** {v_info['fps'][id]}")
+                st.write(f"**Format:** {v_info['format'][id]}")
+                file_name = st.text_input('Simpan dengan nama', placeholder=v_info['title'])
+                if file_name:
+                    if file_name != v_info['title']:
+                        file_name += ".mp4"
+                else:
+                    file_name = v_info['title'] + ".mp4" 
 
-        stream = tube.streams.filter(type="video", resolution=resolution).first()
+                # Tombol unduh video
+                video_bytes = download_video(url, v_info['itag'][id])
+                if video_bytes:
+                    st.download_button(
+                       
+                    label="Unduh Video",
+                    data=video_bytes,
+                    file_name=file_name,
+                    mime="video/mp4"
+                )
+else:
+    if st.session_state.url:  # Cek apakah URL sudah tersimpan di session state
+        url = st.session_state.url
+        with st.spinner("Mengambil informasi video..."):
+            v_info = get_info(url)
+        col1, col2 = st.columns([1, 1.5], gap="small")
+        with st.container():
+            with col1:            
+                st.image(v_info["image"])   
+            with col2:
+                st.subheader("Detail Video ⚙️")
+                res_inp = st.selectbox('Pilih Resolusi', sorted(list(v_info["resolutions"])))  # Mengubah set menjadi list dan mengurutkannya
+                id = list(v_info["resolutions"]).index(res_inp)            
+                st.write(f"**Judul:** {v_info['title']}")
+                st.write(f"**Durasi:** {v_info['length']} detik")
+                st.write(f"**Resolusi:** {v_info['resolutions'][id]}")
+                st.write(f"**Frame Rate:** {v_info['fps'][id]}")
+                st.write(f"**Format:** {v_info['format'][id]}")
+                file_name = st.text_input('Simpan dengan nama', placeholder=v_info['title'])
+                if file_name:
+                    if file_name != v_info['title']:
+                        file_name += ".mp4"
+                else:
+                    file_name = v_info['title'] + ".mp4" 
 
-        if stream is not None:
-            download = st.button("Unduh Video", key='download')
-            if download:
-                download_file(stream)
-
-    st.button("Bersihkan", on_click=clear_text)
-
-if can_access(url):
-    st.video(url)
+                # Tombol unduh video
+                video_bytes = download_video(url, v_info['itag'][id])
+                if video_bytes:
+                    st.download_button(
+                        label="Unduh Video",
+                        data=video_bytes,
+                        file_name=file_name,
+                        mime="video/mp4"
+                    )

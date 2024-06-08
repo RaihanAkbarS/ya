@@ -62,7 +62,8 @@ def get_info(url):
         "resolutions": [],
         "itag": [],
         "fps": [],
-        "format": []
+        "format": [],
+        "filesize": []  # Menyimpan perkiraan ukuran file untuk setiap resolusi
     }
     
     unique_resolutions = set()
@@ -80,6 +81,12 @@ def get_info(url):
             details["itag"].append(tag.group() if tag else "unknown")
             details["fps"].append(fps.group() if fps else "unknown")
             details["format"].append(typ.group() if typ else "unknown")
+            
+            # Menghitung perkiraan ukuran file berdasarkan bitrate dan durasi video
+            bitrate = i.abr if i.abr else 0
+            duration = yt.length
+            filesize = (bitrate / 8) * duration / 1024 / 1024  # Mengkonversi ke MB
+            details["filesize"].append(round(filesize, 2))  # Menyimpan ukuran file dengan 2 angka di belakang koma
     
     # Mengurutkan resolusi secara ascending
     details["resolutions"] = sorted(details["resolutions"], key=lambda x: int(re.search(r'(\d+)', x).group()))
@@ -128,7 +135,7 @@ if st.button("Cek Link"):
                 id = v_info["resolutions"].index(res_inp)            
                 st.write(f"**Judul:** {v_info['title']}")
                 st.write(f"**Durasi:** {v_info['length']} detik")
-                st.write(f"**Resolusi:** {v_info['resolutions'][id]}")
+                st.write(f"**Resolusi:** {v_info['resolutions'][id]} ({v_info['filesize'][id]} MB)")  # Menampilkan ukuran file
                 st.write(f"**Frame Rate:** {v_info['fps'][id]}")
                 st.write(f"**Format:** {v_info['format'][id]}")
                 file_name = st.text_input('Simpan dengan nama', placeholder=v_info['title'])
@@ -158,26 +165,3 @@ else:
                 st.image(v_info["image"])   
             with col2:
                 st.subheader("Detail Video ⚙️")
-                res_inp = st.selectbox('Pilih Resolusi', v_info["resolutions"])
-                id = v_info["resolutions"].index(res_inp)            
-                st.write(f"**Judul:** {v_info['title']}")
-                st.write(f"**Durasi:** {v_info['length']} detik")
-                st.write(f"**Resolusi:** {v_info['resolutions'][id]}")
-                st.write(f"**Frame Rate:** {v_info['fps'][id]}")
-                st.write(f"**Format:** {v_info['format'][id]}")
-                file_name = st.text_input('Simpan dengan nama', placeholder=v_info['title'])
-                if file_name:
-                    if file_name != v_info['title']:
-                        file_name += ".mp4"
-                else:
-                    file_name = v_info['title'] + ".mp4" 
-
-                # Tombol unduh video
-                video_bytes = download_video(url, v_info['itag'][id])
-                if video_bytes:
-                    st.download_button(
-                        label="Unduh Video",
-                        data=video_bytes,
-                        file_name=file_name,
-                        mime="video/mp4"
-                    )

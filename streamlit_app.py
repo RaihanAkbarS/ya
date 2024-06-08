@@ -16,7 +16,7 @@ st.set_page_config(page_title="YouTube Downloader", page_icon="🚀", layout="wi
 @st.cache_data
 def get_info(url):
     yt = YouTube(url)
-    streams = yt.streams.filter(type='video')  # Menghapus progressive=True untuk mendapatkan semua resolusi
+    streams = yt.streams.filter(type='video')
     details = {
         "image": yt.thumbnail_url,
         "streams": streams,
@@ -44,6 +44,9 @@ def get_info(url):
             details["fps"].append(fps.group() if fps else "unknown")
             details["format"].append(typ.group() if typ else "unknown")
     
+    # Mengurutkan resolusi secara ascending
+    details["resolutions"] = sorted(details["resolutions"], key=lambda x: int(re.search(r'(\d+)', x).group()))
+    
     return details
 
 # Fungsi untuk mengunduh video dan mengonversinya menjadi byte
@@ -67,35 +70,37 @@ def download_video(url, itag):
 st.title("YouTube Downloader 🚀")
 
 # Input URL video
-url = st.text_input("Paste URL here 👇", placeholder='https://www.youtube.com/')
-if url:
-    v_info = get_info(url)
-    col1, col2 = st.columns([1, 1.5], gap="small")
-    with st.container():
-        with col1:            
-            st.image(v_info["image"])   
-        with col2:
-            st.subheader("Video Details ⚙️")
-            res_inp = st.selectbox('Select Resolution', v_info["resolutions"])
-            id = v_info["resolutions"].index(res_inp)            
-            st.write(f"**Title:** {v_info['title']}")
-            st.write(f"**Length:** {v_info['length']} sec")
-            st.write(f"**Resolution:** {v_info['resolutions'][id]}")
-            st.write(f"**Frame Rate:** {v_info['fps'][id]}")
-            st.write(f"**Format:** {v_info['format'][id]}")
-            file_name = st.text_input('Save as', placeholder=v_info['title'])
-            if file_name:
-                if file_name != v_info['title']:
-                    file_name += ".mp4"
-            else:
-                file_name = v_info['title'] + ".mp4" 
+url = st.text_input("Tempel URL di sini 👇", placeholder='https://www.youtube.com/')
+if st.button("Cek Link"):
+    if url:
+        with st.spinner("Mengambil informasi video..."):
+            v_info = get_info(url)
+        col1, col2 = st.columns([1, 1.5], gap="small")
+        with st.container():
+            with col1:            
+                st.image(v_info["image"])   
+            with col2:
+                st.subheader("Detail Video ⚙️")
+                res_inp = st.selectbox('Pilih Resolusi', v_info["resolutions"])
+                id = v_info["resolutions"].index(res_inp)            
+                st.write(f"**Judul:** {v_info['title']}")
+                st.write(f"**Durasi:** {v_info['length']} detik")
+                st.write(f"**Resolusi:** {v_info['resolutions'][id]}")
+                st.write(f"**Frame Rate:** {v_info['fps'][id]}")
+                st.write(f"**Format:** {v_info['format'][id]}")
+                file_name = st.text_input('Simpan dengan nama', placeholder=v_info['title'])
+                if file_name:
+                    if file_name != v_info['title']:
+                        file_name += ".mp4"
+                else:
+                    file_name = v_info['title'] + ".mp4" 
 
-            # Tombol unduh video
-            video_bytes = download_video(url, v_info['itag'][id])
-            if video_bytes:
-                st.download_button(
-                    label="Download Video",
-                    data=video_bytes,
-                    file_name=file_name,
-                    mime="video/mp4"
-                )
+                # Tombol unduh video
+                video_bytes = download_video(url, v_info['itag'][id])
+                if video_bytes:
+                    st.download_button(
+                        label="Unduh Video",
+                        data=video_bytes,
+                        file_name=file_name,
+                        mime="video/mp4"
+                    )

@@ -16,7 +16,7 @@ st.set_page_config(page_title="YouTube Downloader", page_icon="🚀", layout="wi
 @st.cache_data
 def get_info(url):
     yt = YouTube(url)
-    streams = yt.streams.filter(progressive=True, type='video')
+    streams = yt.streams.filter(type='video')  # Menghapus progressive=True untuk mendapatkan semua resolusi
     details = {
         "image": yt.thumbnail_url,
         "streams": streams,
@@ -46,9 +46,13 @@ def download_video(url, itag):
     yt = YouTube(url)
     stream = yt.streams.get_by_itag(itag)
     buffer = BytesIO()
-    stream.stream_to_buffer(buffer)
-    buffer.seek(0)
-    return buffer
+    try:
+        stream.stream_to_buffer(buffer)
+        buffer.seek(0)
+        return buffer
+    except Exception as e:
+        st.error(f"Error: {e}")
+        return None
 
 # Judul aplikasi
 st.title("YouTube Downloader 🚀")
@@ -79,9 +83,10 @@ if url:
 
             # Tombol unduh video
             video_bytes = download_video(url, v_info['itag'][id])
-            st.download_button(
-                label="Download Video",
-                data=video_bytes,
-                file_name=file_name,
-                mime="video/mp4"
-            )
+            if video_bytes:
+                st.download_button(
+                    label="Download Video",
+                    data=video_bytes,
+                    file_name=file_name,
+                    mime="video/mp4"
+                )

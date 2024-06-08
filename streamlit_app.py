@@ -12,26 +12,6 @@ if not os.path.exists(directory):
 # Mengatur konfigurasi halaman Streamlit
 st.set_page_config(page_title="YouTube Downloader", page_icon="🚀", layout="wide")
 
-# Mengatur background halaman dan styling untuk input text
-st.markdown(f"""
-    <style>
-    .stApp {{
-        background-image: url("https://images.unsplash.com/photo-1516557070061-c3d1653fa646?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2070&q=80");
-        background-attachment: fixed;
-        background-size: cover;
-        background-repeat: no-repeat;
-        background-position: center;
-    }}
-    .stTextInput > div > div {{
-        background: rgba(255, 255, 255, 0.5);  /* Semi-transparan background */
-        border: 1px solid rgba(255, 255, 255, 0.5);  /* Semi-transparan border */
-    }}
-    .stTextInput > div > div > input {{
-        color: black;
-    }}
-    </style>
-""", unsafe_allow_html=True)
-
 # Fungsi untuk mendapatkan informasi video
 @st.cache_data
 def get_info(url):
@@ -48,16 +28,21 @@ def get_info(url):
         "format": []
     }
     
+    unique_resolutions = set()
+    
     for i in streams:
         res = re.search(r'(\d+)p', str(i))
         typ = re.search(r'video/(\w+)', str(i))
         fps = re.search(r'(\d+)fps', str(i))
         tag = re.search(r'(\d+)', str(i))
         
-        details["resolutions"].append(res.group() if res else "unknown")
-        details["itag"].append(tag.group() if tag else "unknown")
-        details["fps"].append(fps.group() if fps else "unknown")
-        details["format"].append(typ.group() if typ else "unknown")
+        resolution = res.group() if res else "unknown"
+        if resolution not in unique_resolutions:
+            unique_resolutions.add(resolution)
+            details["resolutions"].append(resolution)
+            details["itag"].append(tag.group() if tag else "unknown")
+            details["fps"].append(fps.group() if fps else "unknown")
+            details["format"].append(typ.group() if typ else "unknown")
     
     return details
 

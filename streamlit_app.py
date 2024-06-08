@@ -4,14 +4,13 @@ import os
 import re
 from io import BytesIO
 
-st.set_theme('midnight')
 # Membuat directory untuk menyimpan video yang diunduh
 directory = 'downloads/'
 if not os.path.exists(directory):
     os.makedirs(directory)
 
-# Mengatur konfigurasi halaman Streamlit
-st.set_page_config(page_title="YouTube Downloader", page_icon="🚀", layout="wide")
+# Mengatur konfigurasi halaman Streamlit dengan dark mode
+st.set_page_config(page_title="YouTube Downloader", page_icon="🚀", layout="wide", theme="dark")
 
 # Fungsi untuk mendapatkan informasi video
 @st.cache_data
@@ -103,45 +102,12 @@ if st.button("Cek Link"):
                     file_name = v_info['title'] + ".mp4" 
 
                 # Tombol unduh video
-                video_bytes = download_video(url, v_info['itag'][id])
-                if video_bytes:
-                    st.download_button(
-                        label="Unduh Video",
-                        data=video_bytes,
-                        file_name=file_name,
-                        mime="video/mp4"
-                    )
-else:
-    if st.session_state.url:  # Cek apakah URL sudah tersimpan di session state
-        url = st.session_state.url
-        with st.spinner("Mengambil informasi video..."):
-            v_info = get_info(url)
-        col1, col2 = st.columns([1, 1.5], gap="small")
-        with st.container():
-            with col1:            
-                st.image(v_info["image"])   
-            with col2:
-                st.subheader("Detail Video ⚙️")
-                res_inp = st.selectbox('Pilih Resolusi', v_info["resolutions"])
-                id = v_info["resolutions"].index(res_inp)            
-                st.write(f"**Judul:** {v_info['title']}")
-                st.write(f"**Durasi:** {v_info['length']} detik")
-                st.write(f"**Resolusi:** {v_info['resolutions'][id]}")
-                st.write(f"**Frame Rate:** {v_info['fps'][id]}")
-                st.write(f"**Format:** {v_info['format'][id]}")
-                file_name = st.text_input('Simpan dengan nama', placeholder=v_info['title'])
-                if file_name:
-                    if file_name != v_info['title']:
-                        file_name += ".mp4"
-                else:
-                    file_name = v_info['title'] + ".mp4" 
-
-                # Tombol unduh video
-                video_bytes = download_video(url, v_info['itag'][id])
-                if video_bytes:
-                    st.download_button(
-                        label="Unduh Video",
-                        data=video_bytes,
-                        file_name=file_name,
-                        mime="video/mp4"
-                    )
+                if st.button("Unduh Video"):
+                    video_bytes = download_video(url, v_info['itag'][id])
+                    if video_bytes:
+                        st.download_button(
+                            label="Unduh Video",
+                            data=video_bytes,
+                            file_name=file_name,
+                            mime="video/mp4"
+                        )

@@ -18,6 +18,7 @@ def get_info(url):
     yt = YouTube(url)
     streams = yt.streams.filter(progressive=True, type='video')
     details = {
+        "image": yt.thumbnail_url,
         "streams": streams,
         "title": yt.title,
         "length": yt.length,
@@ -56,26 +57,31 @@ st.title("YouTube Downloader 🚀")
 url = st.text_input("Paste URL here 👇", placeholder='https://www.youtube.com/')
 if url:
     v_info = get_info(url)
-    st.subheader("Video Details ⚙️")
-    res_inp = st.selectbox('Select Resolution', v_info["resolutions"])
-    id = v_info["resolutions"].index(res_inp)            
-    st.write(f"**Title:** {v_info['title']}")
-    st.write(f"**Length:** {v_info['length']} sec")
-    st.write(f"**Resolution:** {v_info['resolutions'][id]}")
-    st.write(f"**Frame Rate:** {v_info['fps'][id]}")
-    st.write(f"**Format:** {v_info['format'][id]}")
-    file_name = st.text_input('Save as', placeholder=v_info['title'])
-    if file_name:
-        if file_name != v_info['title']:
-            file_name += ".mp4"
-    else:
-        file_name = v_info['title'] + ".mp4" 
+    col1, col2 = st.columns([1, 1.5], gap="small")
+    with st.container():
+        with col1:            
+            st.image(v_info["image"])   
+        with col2:
+            st.subheader("Video Details ⚙️")
+            res_inp = st.selectbox('Select Resolution', v_info["resolutions"])
+            id = v_info["resolutions"].index(res_inp)            
+            st.write(f"**Title:** {v_info['title']}")
+            st.write(f"**Length:** {v_info['length']} sec")
+            st.write(f"**Resolution:** {v_info['resolutions'][id]}")
+            st.write(f"**Frame Rate:** {v_info['fps'][id]}")
+            st.write(f"**Format:** {v_info['format'][id]}")
+            file_name = st.text_input('Save as', placeholder=v_info['title'])
+            if file_name:
+                if file_name != v_info['title']:
+                    file_name += ".mp4"
+            else:
+                file_name = v_info['title'] + ".mp4" 
 
-    # Tombol unduh video
-    video_bytes = download_video(url, v_info['itag'][id])
-    st.download_button(
-        label="Download Video",
-        data=video_bytes,
-        file_name=file_name,
-        mime="video/mp4"
-    )
+            # Tombol unduh video
+            video_bytes = download_video(url, v_info['itag'][id])
+            st.download_button(
+                label="Download Video",
+                data=video_bytes,
+                file_name=file_name,
+                mime="video/mp4"
+            )

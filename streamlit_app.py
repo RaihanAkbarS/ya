@@ -7,7 +7,7 @@ from PIL import Image
 def download_video(url, resolution):
     try:
         yt = YouTube(url)
-        stream = yt.streams.get_by_resolution(resolution)
+        stream = yt.streams.filter(res=resolution, file_extension='mp4').first()
         if stream:
             video_bytes = BytesIO()
             stream.download(video_bytes)
@@ -27,6 +27,12 @@ def main():
     # Input URL video dari pengguna
     video_url = st.text_input("Masukkan URL video YouTube:")
 
+    # Tombol untuk menampilkan thumbnail
+    if video_url:
+        yt = YouTube(video_url)
+        thumbnail_url = yt.thumbnail_url
+        st.image(thumbnail_url, caption="Thumbnail YouTube")
+
     # Pilihan resolusi video
     resolutions = ["144p", "240p", "360p", "480p", "720p", "1080p"]
     resolution = st.selectbox("Pilih resolusi video:", resolutions)
@@ -34,15 +40,14 @@ def main():
     # Tombol untuk memulai unduhan
     if st.button("Download"):
         if video_url:
-            video_bytes, thumbnail_url = download_video(video_url, resolution)
-            if video_bytes and thumbnail_url:
+            video_bytes, _ = download_video(video_url, resolution)
+            if video_bytes:
                 st.download_button(
                     label="Download Video",
                     data=video_bytes.getvalue(),
                     file_name="video.mp4",
                     mime="video/mp4",
                 )
-                st.image(thumbnail_url, caption="Thumbnail YouTube")
 
 if __name__ == "__main__":
     main()

@@ -65,13 +65,17 @@ def get_info(url):
 def download_video(url, itag):
     yt = YouTube(url)
     stream = yt.streams.get_by_itag(itag)
-    buffer = BytesIO()
-    try:
-        stream.stream_to_buffer(buffer)
-        buffer.seek(0)
-        return buffer
-    except Exception as e:
-        st.error(f"Error: {e}")
+    if stream:
+        buffer = BytesIO()
+        try:
+            stream.stream_to_buffer(buffer)
+            buffer.seek(0)
+            return buffer
+        except Exception as e:
+            st.error(f"Error: {e}")
+            return None
+    else:
+        st.error("Error: Stream not found.")
         return None
 
 # Judul aplikasi

@@ -185,7 +185,8 @@ if st.session_state.url:  # Cek apakah URL sudah tersimpan di session state
             st.image(v_info["image"])   
         with col2:
             st.subheader("Detail Video ⚙️")
-            res_inp = st.selectbox('Pilih Resolusi', v_info["resolutions"])
+            res_inp_placeholder = st.empty()
+            res_inp = res_inp_placeholder.selectbox('Pilih Resolusi', v_info["resolutions"])
             id = v_info["resolutions"].index(res_inp)            
             st.write(f"**Judul:** {v_info['title']}")
             st.write(f"**Durasi:** {v_info['length']} detik")

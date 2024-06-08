@@ -8,10 +8,14 @@ def download_video(url, resolution):
     try:
         yt = YouTube(url)
         stream = yt.streams.get_by_resolution(resolution)
-        video_bytes = BytesIO()
-        stream.download(video_bytes)
-        thumbnail_url = yt.thumbnail_url
-        return video_bytes, thumbnail_url
+        if stream:
+            video_bytes = BytesIO()
+            stream.download(video_bytes)
+            thumbnail_url = yt.thumbnail_url
+            return video_bytes, thumbnail_url
+        else:
+            st.error(f"Tidak ada stream yang tersedia dengan resolusi {resolution}.")
+            return None, None
     except Exception as e:
         st.error(f"Error: {str(e)}")
         return None, None

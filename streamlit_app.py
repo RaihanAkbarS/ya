@@ -2,6 +2,7 @@ import streamlit as st
 from pytube import YouTube
 import os
 import re
+from io import BytesIO
 
 # Membuat directory untuk menyimpan video yang diunduh
 directory = 'downloads/'
@@ -11,12 +12,22 @@ if not os.path.exists(directory):
 # Mengatur konfigurasi halaman Streamlit
 st.set_page_config(page_title="YouTube Downloader", page_icon="🚀", layout="wide")
 
-# Mengatur background halaman menjadi hitam
+# Mengatur background halaman dan styling untuk input text
 st.markdown(f"""
     <style>
     .stApp {{
-        background-color: black;
-        color: white;
+        background-image: url("https://images.unsplash.com/photo-1516557070061-c3d1653fa646?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2070&q=80");
+        background-attachment: fixed;
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-position: center;
+    }}
+    .stTextInput > div > div {{
+        background: rgba(255, 255, 255, 0.5);  /* Semi-transparan background */
+        border: 1px solid rgba(255, 255, 255, 0.5);  /* Semi-transparan border */
+    }}
+    .stTextInput > div > div > input {{
+        color: black;
     }}
     </style>
 """, unsafe_allow_html=True)
@@ -50,6 +61,15 @@ def get_info(url):
     
     return details
 
+# Fungsi untuk mengunduh video dan mengonversinya menjadi byte
+def download_video(url, itag):
+    yt = YouTube(url)
+    stream = yt.streams.get_by_itag(itag)
+    buffer = BytesIO()
+    stream.stream_to_buffer(buffer)
+    buffer.seek(0)
+    return buffer
+
 # Judul aplikasi
 st.title("YouTube Downloader 🚀")
 
@@ -76,14 +96,12 @@ if url:
                     file_name += ".mp4"
             else:
                 file_name = v_info['title'] + ".mp4" 
-                
-        button = st.download_button("Download ⚡️")
-        if button:
-            with st.spinner('Downloading...'):
-                try:
-                    ds = v_info["streams"].get_by_itag(v_info['itag'][id])
-                    ds.download(filename=file_name, output_path=directory)
-                    st.success('Download Complete', icon="✅")
-                    st.balloons()
-                except Exception as e:
-                    st.error(f'Error: {str(e)}', icon="🚨")
+
+            # Tombol unduh video
+            video_bytes = download_video(url, v_info['itag'][id])
+            st.download_button(
+                label="Download Video ⚡️",
+                data=video_bytes,
+                file_name=file_name,
+                mime="video/mp4"
+            )

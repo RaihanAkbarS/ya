@@ -41,15 +41,15 @@ def main():
         if video_url:
             video_file, _ = download_video(video_url, resolution)
             if video_file:
-                with open(video_file, "rb") as f:
-                    video_bytes = f.read()
-                    st.download_button(
-                        label="Download Video",
-                        data=video_bytes,
-                        file_name="video.mp4",
-                        mime="video/mp4",
-                    )
-                os.remove(video_file)  # Hapus file sementara setelah diunduh
+                st.markdown(get_video_download_link(video_file), unsafe_allow_html=True)
+
+# Fungsi untuk mendapatkan tautan unduhan video
+def get_video_download_link(video_path):
+    with open(video_path, "rb") as f:
+        video_bytes = f.read()
+    video_base64 = base64.b64encode(video_bytes).decode()
+    download_link = f'<a href="data:video/mp4;base64,{video_base64}" download="video.mp4">Download Video</a>'
+    return download_link
 
 if __name__ == "__main__":
     main()

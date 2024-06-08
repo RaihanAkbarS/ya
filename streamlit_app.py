@@ -12,6 +12,26 @@ if not os.path.exists(directory):
 # Mengatur konfigurasi halaman Streamlit
 st.set_page_config(page_title="YouTube Downloader", page_icon="🚀", layout="wide")
 
+# Mengatur background halaman dan styling untuk input text
+st.markdown(f"""
+    <style>
+    .stApp {{
+        background-image: url("https://images.unsplash.com/photo-1516557070061-c3d1653fa646?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2070&q=80");
+        background-attachment: fixed;
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-position: center;
+    }}
+    .stTextInput > div > div {{
+        background: rgba(255, 255, 255, 0.5);  /* Semi-transparan background */
+        border: 1px solid rgba(255, 255, 255, 0.5);  /* Semi-transparan border */
+    }}
+    .stTextInput > div > div > input {{
+        color: black;
+    }}
+    </style>
+""", unsafe_allow_html=True)
+
 # Fungsi untuk mendapatkan informasi video
 @st.cache_data
 def get_info(url):

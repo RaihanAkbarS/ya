@@ -65,8 +65,6 @@ def get_info(url):
         "format": []
     }
     
-    unique_resolutions = set()
-    
     for i in streams:
         res = re.search(r'(\d+)p', str(i))
         typ = re.search(r'video/(\w+)', str(i))
@@ -74,15 +72,10 @@ def get_info(url):
         tag = re.search(r'(\d+)', str(i))
         
         resolution = res.group() if res else "unknown"
-        if resolution not in unique_resolutions:
-            unique_resolutions.add(resolution)
-            details["resolutions"].append(resolution)
-            details["itag"].append(tag.group() if tag else "unknown")
-            details["fps"].append(fps.group() if fps else "unknown")
-            details["format"].append(typ.group() if typ else "unknown")
-    
-    # Mengurutkan resolusi secara ascending
-    details["resolutions"] = sorted(details["resolutions"], key=lambda x: int(re.search(r'(\d+)', x).group()))
+        details["resolutions"].append(resolution)
+        details["itag"].append(tag.group() if tag else "unknown")
+        details["fps"].append(fps.group() if fps else "unknown")
+        details["format"].append(typ.group() if typ else "unknown")
     
     return details
 

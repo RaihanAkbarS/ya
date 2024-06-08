@@ -4,6 +4,7 @@ import os
 import re
 from io import BytesIO
 
+st.set_theme('midnight')
 # Membuat directory untuk menyimpan video yang diunduh
 directory = 'downloads/'
 if not os.path.exists(directory):
